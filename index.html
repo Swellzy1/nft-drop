@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>GIFT NFT DROP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=TT+Travels:wght@500;800&display=swap" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes cardAppear {
+      0% { opacity: 0; transform: translateY(50px) scale(0.9); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #0A0C10 0%, #101B1F 100%);
+      font-family: 'TT Travels', sans-serif;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      position: relative;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .title {
+      color: white;
+      font-size: clamp(28px, 8vw, 40px);
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 40px;
+      animation: fadeIn 1s ease-out forwards;
+      line-height: 1.2;
+    }
+    
+    .buttons-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 350px;
+    }
+    
+    .btn-get, .btn-channel {
+      flex: 1;
+      min-width: 140px;
+      height: 50px;
+      border-radius: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      background: transparent;
+      color: white;
+      font-size: 15px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: 1px solid;
+      font-family: 'TT Travels', sans-serif;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      text-decoration: none;
+    }
+    
+    .btn-get {
+      border-color: #00F6FF;
+      animation: fadeIn 1.4s ease-out forwards;
+    }
+    
+    .btn-get:hover, .btn-get:active {
+      background: rgba(0, 246, 255, 0.1);
+      transform: scale(1.05);
+    }
+    
+    .btn-channel {
+      border-color: white;
+      animation: fadeIn 1.6s ease-out forwards;
+    }
+    
+    .btn-channel:hover, .btn-channel:active {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.05);
+    }
+    
+    /* Стили для подарочной карточки */
+    .gift-image {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: calc(90vw - 8px);
+      max-width: 346px;
+      height: auto;
+      aspect-ratio: 1.05;
+      border-radius: 28px;
+      object-fit: cover;
+      display: none;
+      z-index: 11;
+      border: 3px solid #01EEFF;
+      box-sizing: border-box;
+    }
+    
+    .take-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      max-width: 250px;
+      height: 50px;
+      border-radius: 30px;
+      border: 1px solid white;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      z-index: 12;
+      background: transparent;
+      font-family: 'TT Travels', sans-serif;
+    }
+    
+    .take-btn:hover, .take-btn:active {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(-50%) scale(1.05);
+    }
+    
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: none;
+      z-index: 8;
+      backdrop-filter: blur(5px);
+    }
+    
+    .close-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+      z-index: 14;
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    
+    .close-btn:hover, .close-btn:active {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+    
+    .error-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(16, 23, 27, 0.98);
+      border: 2px solid #ff5555;
+      border-radius: 20px;
+      padding: 25px;
+      width: 90%;
+      max-width: 350px;
+      text-align: center;
+      z-index: 20;
+      display: none;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+    
+    .error-message p {
+      margin: 0 0 20px 0;
+      font-size: 16px;
+      line-height: 1.5;
+      color: white;
+    }
+    
+    .error-close-btn {
+      background: #ff5555;
+      border: none;
+      border-radius: 30px;
+      padding: 12px 25px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'TT Travels', sans-serif;
+      font-weight: 500;
+    }
+    
+    .error-close-btn:hover, .error-close-btn:active {
+      background: #ff3333;
+      transform: scale(1.05);
+    }
+    
+    .gift-caption {
+      position: fixed;
+      top: calc(50% + 120px);
+      left: 50%;
+      transform: translate(-50%, 0);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 500;
+      text-align: center;
+      z-index: 12;
+      display: none;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      pointer-events: none;
+    }
+    
+    /* Медиа-запросы для мобильных устройств */
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+        min-height: 100vh;
+      }
+      
+      .title {
+        font-size: 32px;
+        margin-bottom: 30px;
+      }
+      
+      .buttons-container {
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+      }
+      
+      .btn-get, .btn-channel {
+        width: 100%;
+        height: 55px;
+        font-size: 16px;
+      }
+      
+      .gift-image {
+        width: 95vw;
+        max-width: 320px;
+      }
+      
+      .take-btn {
+        width: 90%;
+        height: 55px;
+        font-size: 18px;
+        bottom: 30px;
+      }
+      
+      .close-btn {
+        top: 15px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+        font-size: 25px;
+      }
+      
+      .error-message {
+        width: 95%;
+        padding: 20px;
+      }
+      
+      .error-message p {
+        font-size: 15px;
+      }
+      
+      .error-close-btn {
+        padding: 15px 30px;
+        font-size: 16px;
+      }
+    }
+    
+    @media (max-width: 360px) {
+      .title {
+        font-size: 28px;
+      }
+      
+      .btn-get, .btn-channel {
+        height: 50px;
+        font-size: 15px;
+      }
+      
+      .take-btn {
+        height: 50px;
+        font-size: 16px;
+      }
+    }
+    
+    /* Поддержка устройств с высоким DPI */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      .gift-image {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+      }
+    }
+    
+    /* Улучшения для устройств с поддержкой hover */
+    @media (hover: hover) {
+      .btn-get:hover, .btn-channel:hover {
+        transform: scale(1.05);
+      }
+    }
+    
+    /* Улучшения для устройств без поддержки hover */
+    @media (hover: none) {
+      .btn-get:active, .btn-channel:active {
+        transform: scale(0.95);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title">GIFT NFT DROP</div>
+    
+    <div class="buttons-container">
+      <button class="btn-get">ПОЛУЧИТЬ</button>
+      <button class="btn-channel">НАШ КАНАЛ</button>
+    </div>
+  </div>
+
+  <!-- Элементы подарочной карточки -->
+  <div class="overlay" id="overlay"></div>
+  <img class="gift-image" id="giftImage" src="img/gift.png" alt="Gift">
+  <div class="gift-caption" id="giftCaption">Vintage Cigar #4451</div>
+  <button class="take-btn" id="takeBtn">ЗАБРАТЬ</button>
+  <button class="close-btn" id="closeBtn">&times;</button>
+
+  <!-- Сообщение об ошибке -->
+  <div class="error-message" id="errorMessage">
+    <p>Вы не можете получить подарок, так как у бота нет прав его вам отправить.</p>
+    <p>Чтобы разрешить доступ, пропишите в боте /help</p>
+    <button class="error-close-btn" id="errorCloseBtn">Понятно</button>
+  </div>
+
+  <script>
+    // Telegram WebApp поддержка
+    let tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    if (tg) {
+      tg.expand();
+      tg.MainButton.setText('ЗАБРАТЬ');
+      tg.MainButton.show();
+      tg.MainButton.setParams({color: '#01EEFF', text_color: '#fff'});
+    }
+
+    // Предотвращение масштабирования при двойном тапе
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+    
+    // Обработчик кнопки ПОЛУЧИТЬ
+    document.querySelector('.btn-get').addEventListener('click', function() {
+      showGiftCard();
+      if (tg) {
+        tg.MainButton.show();
+      }
+    });
+    
+    // Обработчик кнопки НАШ КАНАЛ
+    document.querySelector('.btn-channel').addEventListener('click', function() {
+      window.open('https://t.me/yourchannel', '_blank');
+    });
+    
+    // Обработчик кнопки ЗАБРАТЬ
+    document.getElementById('takeBtn').addEventListener('click', function() {
+      document.getElementById('errorMessage').style.display = 'block';
+      if (tg) {
+        tg.sendData('take_gift'); // пример отправки события в Telegram
+      }
+    });
+    
+    // Если пользователь нажимает mainButton в Telegram
+    if (tg) {
+      tg.MainButton.onClick(function() {
+        document.getElementById('takeBtn').click();
+      });
+    }
+    
+    // Обработчик кнопки закрытия карточки
+    document.getElementById('closeBtn').addEventListener('click', closeGiftCard);
+    
+    // Обработчик клика по оверлею
+    document.getElementById('overlay').addEventListener('click', closeGiftCard);
+    
+    // Обработчик кнопки закрытия сообщения об ошибке
+    document.getElementById('errorCloseBtn').addEventListener('click', function() {
+      document.getElementById('errorMessage').style.display = 'none';
+    });
+    
+    // Закрытие по Escape
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeGiftCard();
+      }
+    });
+    
+    function showGiftCard() {
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('giftImage').style.display = 'block';
+      document.getElementById('giftCaption').style.display = 'block';
+      document.getElementById('takeBtn').style.display = 'flex';
+      document.getElementById('closeBtn').style.display = 'flex';
+      if (tg) {
+        tg.MainButton.show();
+      }
+      // Блокировка скролла
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closeGiftCard() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('giftImage').style.display = 'none';
+      document.getElementById('giftCaption').style.display = 'none';
+      document.getElementById('takeBtn').style.display = 'none';
+      document.getElementById('closeBtn').style.display = 'none';
+      document.getElementById('errorMessage').style.display = 'none';
+      if (tg) {
+        tg.MainButton.hide();
+      }
+      // Разблокировка скролла
+      document.body.style.overflow = '';
+    }
+    
+    // Обработка изменения ориентации устройства
+    window.addEventListener('orientationchange', function() {
+      setTimeout(function() {
+        // Больше не требуется пересчитывать .gift-card
+      }, 100);
+    });
+  </script>
+</body>
+</html>
